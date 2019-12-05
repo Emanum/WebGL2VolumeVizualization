@@ -31,13 +31,17 @@ class PolarCoordinateCamera {
 
   rotatePolar(polarAngleChanged){
     this.polarAngle += polarAngleChanged;
-    this.polarAngle = this.polarAngle % 90;//would flip view without special treatment
+    if(this.polarAngle < 0.1){
+      this.polarAngle = 0.1;
+    }
+    if(this.polarAngle > Math.PI - 0.1){
+      this.polarAngle = Math.PI - 0.1;
+    }
     this.updateMatrices();
   }
 
   rotateAzimuthal(azimuthalAngleChanged){
     this.azimuthalAngle += azimuthalAngleChanged;
-    this.azimuthalAngle = this.azimuthalAngle % 360;
     this.updateMatrices();
   }
 
@@ -45,9 +49,9 @@ class PolarCoordinateCamera {
     //currently projMatrix is static
 
     //calcutate Pos in normal System https://en.wikipedia.org/wiki/Spherical_coordinate_system#Coordinate_system_conversrions
-    const x = this.distance * Math.sin(this.azimuthalAngle) * Math.cos(this.polarAngle);
-    const y = this.distance * Math.sin(this.azimuthalAngle) * Math.sin(this.polarAngle);
-    const z = this.distance * Math.cos(this.azimuthalAngle);
+    const z = this.distance * Math.cos(this.azimuthalAngle) * Math.sin(this.polarAngle);
+    const x = this.distance * Math.sin(this.azimuthalAngle) * Math.sin(this.polarAngle);
+    const y = this.distance * Math.cos(this.polarAngle);
 
     this.camera = this.m4.lookAt([x,y,z],this.centerPos,this.up);
     this.view = this.m4.inverse(this.camera);

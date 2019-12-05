@@ -13,9 +13,12 @@ class SimpleCubeOwnCamera{
     this.gl = canvas.getContext("webgl");
     this.programInfo = twgl.createProgramInfo(this.gl, ["cube_vs", "cube_fs"]);
 
-    this.inputHandler = new InputHandler(canvas,(changedScroll)=>this.scroll_event(changedScroll));
+    //this.inputHandler = new InputHandler(canvas,(changedScroll)=>this.scroll_event(changedScroll));
+    document.addEventListener("keydown",(e)=>this.dealWithKeyboard(e),false);
+    document.addEventListener("keyup",(e)=>this.dealWithKeyboard(e),false);
+    document.addEventListener("keypress",(e)=>this.dealWithKeyboard(e),false);
 
-    this.camera = new PolarCoordinateCamera(this.gl,[0,0,0],5,90,60);
+    this.camera = new PolarCoordinateCamera(this.gl,[0,0,0],5.0,90.0,60.0);
 
     this.arrays = {
       position: [1, 1, -1, 1, 1, 1, 1, -1, 1, 1, -1, -1, -1, 1, 1, -1, 1, -1, -1, -1, -1, -1, -1, 1, -1, 1, 1, 1, 1, 1, 1, 1, -1, -1, 1, -1, -1, -1, -1, 1, -1, -1, 1, -1, 1, -1, -1, 1, 1, 1, 1, -1, 1, 1, -1, -1, 1, 1, -1, 1, -1, 1, -1, 1, 1, -1, 1, -1, -1, -1, -1, -1],
@@ -48,8 +51,27 @@ class SimpleCubeOwnCamera{
     };
   }
 
-  scroll_event(changedScroll){
-    this.camera.zoom(changedScroll/100);
+  dealWithKeyboard(event){
+    switch (event.key) {
+      case '-':
+        this.camera.zoom(0.1);
+        break;
+      case '+':
+        this.camera.zoom(-0.1);
+        break;
+      case 'ArrowDown':
+        this.camera.rotatePolar(0.1);
+        break;
+      case 'ArrowUp':
+        this.camera.rotatePolar(-0.1);
+        break;
+      case 'ArrowLeft':
+        this.camera.rotateAzimuthal(-0.1);
+        break;
+      case 'ArrowRight':
+        this.camera.rotateAzimuthal(0.1);
+        break;
+    }
   }
 
   renderCube(time){
@@ -62,7 +84,7 @@ class SimpleCubeOwnCamera{
     this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT);
 
 
-    const world = this.m4.rotationY(time);
+    const world = this.m4.rotationY(0);
 
     this.uniforms.u_viewInverse = this.camera.getViewInverseMatrix();
     this.uniforms.u_world = world;
