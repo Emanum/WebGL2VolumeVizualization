@@ -8,6 +8,6 @@ function loadShaderSrc(vertexElemId, vertexShaderPath) {
 
 function initApplication() {
   "use strict";
-  let cubeProgram = new SimpleCube("mainCanvas");
+  let cubeProgram = new SimpleCubeOwnCamera(document.querySelector("#mainCanvas") );
   requestAnimationFrame((time)=>cubeProgram.renderCube(time));//https://stackoverflow.com/questions/28908999/use-requestanimationframe-in-a-class
 }

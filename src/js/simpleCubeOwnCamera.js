@@ -1,6 +1,6 @@
-class SimpleCube{
+class SimpleCubeOwnCamera{
 
-  constructor(canvasName) {
+  constructor(canvas) {
     var vertexShaderPath = "shader/cube.vs";
     var fragmentShaderPath = "shader/cube.fs";
     var vertexElemId = "cube_vs";
@@ -10,8 +10,12 @@ class SimpleCube{
     loadShaderSrc(fragmentElemId, fragmentShaderPath);
 
     this.m4 = twgl.m4;
-    this.gl = document.querySelector("#"+canvasName).getContext("webgl");
+    this.gl = canvas.getContext("webgl");
     this.programInfo = twgl.createProgramInfo(this.gl, ["cube_vs", "cube_fs"]);
+
+    this.inputHandler = new InputHandler(canvas,(changedScroll)=>this.scroll_event(changedScroll));
+
+    this.camera = new PolarCoordinateCamera(this.gl,[0,0,0],5,90,60);
 
     this.arrays = {
       position: [1, 1, -1, 1, 1, 1, 1, -1, 1, 1, -1, -1, -1, 1, 1, -1, 1, -1, -1, -1, -1, -1, -1, 1, -1, 1, 1, 1, 1, 1, 1, 1, -1, -1, 1, -1, -1, -1, -1, 1, -1, -1, 1, -1, 1, -1, -1, 1, 1, 1, 1, -1, 1, 1, -1, -1, 1, 1, -1, 1, -1, 1, -1, 1, 1, -1, 1, -1, -1, -1, -1, -1],
@@ -44,6 +48,10 @@ class SimpleCube{
     };
   }
 
+  scroll_event(changedScroll){
+    this.camera.zoom(changedScroll/100);
+  }
+
   renderCube(time){
     time *= 0.001;
     twgl.resizeCanvasToDisplaySize(this.gl.canvas);
@@ -53,24 +61,13 @@ class SimpleCube{
     this.gl.enable(this.gl.CULL_FACE);
     this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT);
 
-    const fov = 30 * Math.PI / 180;
-    const aspect = this.gl.canvas.clientWidth / this.gl.canvas.clientHeight;
-    const zNear = 0.5;
-    const zFar = 10;
-    const projection = this.m4.perspective(fov, aspect, zNear, zFar);
-    const eye = [1, 4, -6];
-    const target = [0, 0, 0];
-    const up = [0, 1, 0];
 
-    const camera = this.m4.lookAt(eye, target, up);
-    const view = this.m4.inverse(camera);
-    const viewProjection = this.m4.multiply(projection, view);
     const world = this.m4.rotationY(time);
 
-    this.uniforms.u_viewInverse = camera;
+    this.uniforms.u_viewInverse = this.camera.getViewInverseMatrix();
     this.uniforms.u_world = world;
     this.uniforms.u_worldInverseTranspose = this.m4.transpose(this.m4.inverse(world));
-    this.uniforms.u_worldViewProjection = this.m4.multiply(viewProjection, world);
+    this.uniforms.u_worldViewProjection = this.m4.multiply(this.camera.getViewProjectionMatrix(), world);
 
     this.gl.useProgram(this.programInfo.program);
     twgl.setBuffersAndAttributes(this.gl, this.programInfo, this.bufferInfo);
