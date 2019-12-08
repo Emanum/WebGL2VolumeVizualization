@@ -19,6 +19,18 @@
 </head>
 
 <body onload="initApplication()">
+  <div id="no-webgl2" style="display: none;">
+    <div>Sorry but your browser doesn't appear to support WebGL2</div>
+  </div>
+  <div class="menue">
+    <label for="renderOption"></label>
+    <select name="renderOption" id="renderOption">
+      <option value="0">Front Faces</option>
+      <option value="1">Back Faces</option>
+      <option value="0">MIP Faces</option>
+      <option value="0">Alpha Faces</option>
+    </select>
+  </div>
   <canvas id="mainCanvas" width="100%" height="100%"></canvas>
 </body>
 <!-- init frameworks
@@ -31,8 +43,9 @@
 <script src="js/plugins.js"></script>
 <script src="js/inputHandler.js"></script>
 <script src="js/camera.js"></script>
-<script src="js/simpleCube.js"></script>
-<script src="js/simpleCubeOwnCamera.js"></script>
+<script src="js/programs/simpleCube.js"></script>
+<script src="js/programs/simpleCubeOwnCamera.js"></script>
+<script src="js/programs/volumeVis.js"></script>
 <script src="js/main.js"></script>
 
 </html>

@@ -8,6 +8,11 @@ function loadShaderSrc(vertexElemId, vertexShaderPath) {
 
 function initApplication() {
   "use strict";
-  let cubeProgram = new SimpleCubeOwnCamera(document.querySelector("#mainCanvas") );
-  requestAnimationFrame((time)=>cubeProgram.renderCube(time));//https://stackoverflow.com/questions/28908999/use-requestanimationframe-in-a-class
+  let gl = document.querySelector("#mainCanvas").getContext("webgl2");
+  if(!gl){
+    document.querySelector("#no-webgl2").style.display = "";
+    return;
+  }
+  let volumeVis = new VolumeVis(document.querySelector("#mainCanvas"),gl);
+  requestAnimationFrame((time)=>volumeVis.renderCube(time));//https://stackoverflow.com/questions/28908999/use-requestanimationframe-in-a-class
 }
