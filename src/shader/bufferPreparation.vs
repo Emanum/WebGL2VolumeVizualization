@@ -1,14 +1,12 @@
-#version 300 es
-uniform mat4 mvMatrix;
-uniform mat4 projMatrix;
+uniform mat4 u_worldViewProjection;
 
-in vec3 v_position;
-in vec3 v_texCoord;
+attribute vec4 position;
+attribute vec3 texcoord;
 
-out vec3 texCoordVar;
+varying vec3 v_texCoord;
 
-void main()
-{
-   texCoordVar=v_texCoord;
-   gl_Position=projMatrix*mvMatrix*vec4(v_position,1);
+
+void main() {
+  v_texCoord = texcoord;
+  gl_Position = u_worldViewProjection * position;
 }

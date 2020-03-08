@@ -1,11 +1,7 @@
-#version 300 es
 precision mediump float;
-in vec3 texCoordVar;
 
-out vec4 outcolor;
+varying vec3 v_texCoord;
 
-void main()
-{
-   outcolor=vec4(texCoordVar,1);
-   outcolor=vec4(1,1,0,1);
+void main() {
+  gl_FragColor = vec4(v_texCoord,1);
 }

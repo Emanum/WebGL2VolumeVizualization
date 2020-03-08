@@ -1,6 +1,6 @@
 class SimpleCubeOwnCamera{
 
-  constructor(canvas) {
+  constructor(canvas,gl) {
     var vertexShaderPath = "shader/cube.vs";
     var fragmentShaderPath = "shader/cube.fs";
     var vertexElemId = "cube_vs";
@@ -10,7 +10,7 @@ class SimpleCubeOwnCamera{
     loadShaderSrc(fragmentElemId, fragmentShaderPath);
 
     this.m4 = twgl.m4;
-    this.gl = canvas.getContext("webgl");
+    this.gl = gl;
     this.programInfo = twgl.createProgramInfo(this.gl, ["cube_vs", "cube_fs"]);
 
     //this.inputHandler = new InputHandler(canvas,(changedScroll)=>this.scroll_event(changedScroll));

@@ -1,6 +1,7 @@
 class SimpleCube{
 
-  constructor(canvasName) {
+  constructor(canvas) {
+    alert("TEST");
     var vertexShaderPath = "shader/cube.vs";
     var fragmentShaderPath = "shader/cube.fs";
     var vertexElemId = "cube_vs";
@@ -10,8 +11,8 @@ class SimpleCube{
     loadShaderSrc(fragmentElemId, fragmentShaderPath);
 
     this.m4 = twgl.m4;
-    this.gl = document.querySelector("#"+canvasName).getContext("webgl");
-    this.programInfo = twgl.createProgramInfo(this.gl, ["cube_vs", "cube_fs"]);
+    this.gl = canvas.getContext("webgl");
+    this.programInfo = twgl.createProgramInfo(this.gl, [vertexElemId, fragmentElemId]);
 
     this.arrays = {
       position: [1, 1, -1, 1, 1, 1, 1, -1, 1, 1, -1, -1, -1, 1, 1, -1, 1, -1, -1, -1, -1, -1, -1, 1, -1, 1, 1, 1, 1, 1, 1, 1, -1, -1, 1, -1, -1, -1, -1, 1, -1, -1, 1, -1, 1, -1, -1, 1, 1, 1, 1, -1, 1, 1, -1, -1, 1, 1, -1, 1, -1, 1, -1, 1, 1, -1, 1, -1, -1, -1, -1, -1],

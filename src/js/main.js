@@ -13,6 +13,6 @@ function initApplication() {
     document.querySelector("#no-webgl2").style.display = "";
     return;
   }
-  let volumeVis = new VolumeVis(document.querySelector("#mainCanvas"),gl);
+  let volumeVis = new VolumeVis2(document.querySelector("#mainCanvas"),gl);
   requestAnimationFrame((time)=>volumeVis.renderCube(time));//https://stackoverflow.com/questions/28908999/use-requestanimationframe-in-a-class
 }
