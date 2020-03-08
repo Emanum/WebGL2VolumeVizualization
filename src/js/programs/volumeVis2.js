@@ -1,18 +1,17 @@
 class VolumeVis2{
 
   constructor(canvas,gl) {
-    var vertexShaderPath = "shader/bufferPreparation.vs";
-    var fragmentShaderPath = "shader/bufferPreparation.fs";
-    var vertexElemId = "bufferPreparation_vs";
-    var fragmentElemId = "bufferPreparation_fs";
-
-    loadShaderSrc(vertexElemId, vertexShaderPath);
-    loadShaderSrc(fragmentElemId, fragmentShaderPath);
-
     this.m4 = twgl.m4;
     this.gl = gl;
-    this.programInfo = twgl.createProgramInfo(this.gl, ["bufferPreparation_vs", "bufferPreparation_fs"]);
 
+    this.loadPreperationShaderProgram();
+    this.loadRaycastingShaderProgram();
+
+    //create Framebuffer, for Front and Backface
+    var attachments = [{ format: "RGB", mag: "NEAREST" }];
+    // this.fboFrontFaces = twgl.createFramebufferInfo(this.gl,attachments);
+    // this.fboBackFaces = twgl.createFramebufferInfo(this.gl);
+//https://webglfundamentals.org/webgl/lessons/webgl-render-to-texture.html
     //this.inputHandler = new InputHandler(canvas,(changedScroll)=>this.scroll_event(changedScroll));
     document.addEventListener("keydown",(e)=>this.dealWithKeyboard(e),false);
     document.addEventListener("keyup",(e)=>this.dealWithKeyboard(e),false);
@@ -22,7 +21,75 @@ class VolumeVis2{
 
     this.initCube();
 
-    this.uniforms = {};//init uniforms array
+    this.cubeShaderUniforms = {};//init uniforms array
+    this.raycastingShaderUniforms = {};//init uniforms array
+
+    this.gl.enable(this.gl.DEPTH_TEST);
+    this.gl.enable(this.gl.CULL_FACE);
+  }
+
+  renderCube(time){
+    //usual/common resets per frame
+    twgl.resizeCanvasToDisplaySize(this.gl.canvas);
+    this.gl.viewport(0, 0, this.gl.canvas.width, this.gl.canvas.height);
+
+    //draw to cubeShader
+    this.gl.useProgram(this.cubePreperationProgramInfo.program);
+    this.cubeShaderUniforms.u_worldViewProjection = this.camera.getViewProjectionMatrix();
+    twgl.setUniforms(this.cubePreperationProgramInfo, this.cubeShaderUniforms);
+    twgl.setBuffersAndAttributes(this.gl, this.cubePreperationProgramInfo, this.cubeBufferInfo);
+      // draw FrontFaces
+      // twgl.bindFramebufferInfo(this.gl,this.fboFrontFaces);
+      // this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT);
+      // this.gl.cullFace(this.gl.BACK);
+      // this.gl.drawElements(this.gl.TRIANGLES, this.cubeBufferInfo.numElements, this.gl.UNSIGNED_SHORT, 0);
+
+      //draw BackFaces
+      // twgl.bindFramebufferInfo(this.gl,this.fboFrontFaces);
+      this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT);
+      this.gl.cullFace(this.gl.FRONT);
+      this.gl.drawElements(this.gl.TRIANGLES, this.cubeBufferInfo.numElements, this.gl.UNSIGNED_SHORT, 0);
+
+    // //draw to raycasting shader
+    // this.gl.useProgram(this.raycastingProgramInfo.program);
+    // twgl.bindFramebufferInfo(this.gl);
+    // this.gl.cullFace(this.gl.BACK);
+    // twgl.setBuffersAndAttributes(this.gl, this.raycastingProgramInfo, this.quadBufferInfo);
+    //
+    // //set frontFaces
+    // this.gl.activeTexture(this.gl.TEXTURE0);
+    // this.gl.bindTexture(this.gl.TEXTURE_2D,this.fboFrontFaces.attachments[0]);
+    // this.gl.activeTexture(this.gl.TEXTURE1);
+    // this.gl.bindTexture(this.gl.TEXTURE_2D,this.fboBackFaces.attachments[0]);
+    // twgl.setUniforms(this.raycastingProgramInfo,{
+    //   frontFaces : 0,//index for textureUnit from setActiveTexture
+    //   backFaces : 1
+    // });
+    // //TODO: load and bind 3d texture
+    // this.gl.drawElements(this.gl.TRIANGLES, this.quadBufferInfo.numElements, this.gl.UNSIGNED_SHORT, 0);
+
+    //change frame
+    requestAnimationFrame((time)=>this.renderCube(time));
+  }
+
+  loadPreperationShaderProgram() {
+    var vertexShaderPath = "shader/bufferPreparation.vs";
+    var fragmentShaderPath = "shader/bufferPreparation.fs";
+    var vertexElemId = "bufferPreparation_vs";
+    var fragmentElemId = "bufferPreparation_fs";
+    loadShaderSrc(vertexElemId, vertexShaderPath);
+    loadShaderSrc(fragmentElemId, fragmentShaderPath);
+    this.cubePreperationProgramInfo = twgl.createProgramInfo(this.gl, [vertexElemId, fragmentElemId]);
+  }
+
+  loadRaycastingShaderProgram() {
+    var vertexShaderPath = "shader/raycasting.vs";
+    var fragmentShaderPath = "shader/raycasting.fs";
+    var vertexElemId = "raycasting_vs";
+    var fragmentElemId = "raycasting_fs";
+    loadShaderSrc(vertexElemId, vertexShaderPath);
+    loadShaderSrc(fragmentElemId, fragmentShaderPath);
+    this.raycastingProgramInfo = twgl.createProgramInfo(this.gl, [vertexElemId, fragmentElemId]);
   }
 
   initCube() {
@@ -84,14 +151,21 @@ class VolumeVis2{
       0, 2, 3
     ];
 
-    this.arrays = {
+    //for Front and Backface(ray direction)
+    var cubeInfoArray = {
       position: {numComponents: 3,data:this.cube_vertices},
       texcoord: {numComponents: 3,data:this.cube_tex_coordinates},
       indices:  {numComponents: 3,data:this.cube_elements},
     };
 
-    this.cubeBufferInfo = twgl.createBufferInfoFromArrays(this.gl, this.arrays);
-    twgl.drawBufferInfo
+    //for rendering a "screen" across the window
+    var quadInfoArray = {
+      position: {numComponents: 3,data:this.quad_vertices},
+      indices:  {numComponents: 3,data:this.quad_elements},
+    };
+
+    this.cubeBufferInfo = twgl.createBufferInfoFromArrays(this.gl, cubeInfoArray);
+    this.quadBufferInfo = twgl.createBufferInfoFromArrays(this.gl, quadInfoArray);
   }
 
   dealWithKeyboard(event){
@@ -115,24 +189,6 @@ class VolumeVis2{
         this.camera.rotateAzimuthal(0.1);
         break;
     }
-  }
-
-  renderCube(time){
-    twgl.resizeCanvasToDisplaySize(this.gl.canvas);
-    this.gl.viewport(0, 0, this.gl.canvas.width, this.gl.canvas.height);
-
-    this.gl.enable(this.gl.DEPTH_TEST);
-    this.gl.enable(this.gl.CULL_FACE);
-    this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT);
-
-    this.uniforms.u_worldViewProjection = this.camera.getViewProjectionMatrix();
-
-    this.gl.useProgram(this.programInfo.program);
-    twgl.setBuffersAndAttributes(this.gl, this.programInfo, this.cubeBufferInfo);
-    twgl.setUniforms(this.programInfo, this.uniforms);
-    this.gl.drawElements(this.gl.TRIANGLES, this.cubeBufferInfo.numElements, this.gl.UNSIGNED_SHORT, 0);
-
-    requestAnimationFrame((time)=>this.renderCube(time));
   }
 
 }
