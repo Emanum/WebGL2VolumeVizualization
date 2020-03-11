@@ -1,8 +1,12 @@
-#version 300 es
+attribute vec4 position;
+
+/* #version 300 es
 in vec3 vertex;
-out vec2 texCoord;
+out vec2 texCoord; */
+
+varying vec2 v_texCoord;
 
 void main() {
-  texCoord = vec2(vertex.x,vertex.y);
-  gl_Position = vec4(vertex,1);
+  v_texCoord = vec2(position.x,position.y);
+  gl_Position = position;
 }

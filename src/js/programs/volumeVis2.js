@@ -8,10 +8,17 @@ class VolumeVis2{
     this.loadRaycastingShaderProgram();
 
     //create Framebuffer, for Front and Backface
-    var attachments = [{ format: "RGB", mag: "NEAREST" }];
-    // this.fboFrontFaces = twgl.createFramebufferInfo(this.gl,attachments);
-    // this.fboBackFaces = twgl.createFramebufferInfo(this.gl);
-//https://webglfundamentals.org/webgl/lessons/webgl-render-to-texture.html
+    var imageAttachment = [{
+      format: twgl.RGBA,
+      type: twgl.UNSIGNED_BYTE,
+      min: twgl.LINEAR,
+      wrap: twgl.CLAMP_TO_EDGE
+    }];
+    this.fboFrontFaces = twgl.createFramebufferInfo(this.gl,imageAttachment);
+    this.fboBackFaces = twgl.createFramebufferInfo(this.gl,imageAttachment);
+    twgl.bindFramebufferInfo(this.gl);//bind canvas (back) after creating Framebuffers
+    //https://webglfundamentals.org/webgl/lessons/webgl-render-to-texture.html
+
     //this.inputHandler = new InputHandler(canvas,(changedScroll)=>this.scroll_event(changedScroll));
     document.addEventListener("keydown",(e)=>this.dealWithKeyboard(e),false);
     document.addEventListener("keyup",(e)=>this.dealWithKeyboard(e),false);
@@ -39,10 +46,10 @@ class VolumeVis2{
     twgl.setUniforms(this.cubePreperationProgramInfo, this.cubeShaderUniforms);
     twgl.setBuffersAndAttributes(this.gl, this.cubePreperationProgramInfo, this.cubeBufferInfo);
       // draw FrontFaces
-      // twgl.bindFramebufferInfo(this.gl,this.fboFrontFaces);
-      // this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT);
-      // this.gl.cullFace(this.gl.BACK);
-      // this.gl.drawElements(this.gl.TRIANGLES, this.cubeBufferInfo.numElements, this.gl.UNSIGNED_SHORT, 0);
+      twgl.bindFramebufferInfo(this.gl,this.fboFrontFaces);
+      this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT);
+      this.gl.cullFace(this.gl.BACK);
+      this.gl.drawElements(this.gl.TRIANGLES, this.cubeBufferInfo.numElements, this.gl.UNSIGNED_SHORT, 0);
 
       //draw BackFaces
       // twgl.bindFramebufferInfo(this.gl,this.fboFrontFaces);
@@ -50,23 +57,24 @@ class VolumeVis2{
       this.gl.cullFace(this.gl.FRONT);
       this.gl.drawElements(this.gl.TRIANGLES, this.cubeBufferInfo.numElements, this.gl.UNSIGNED_SHORT, 0);
 
-    // //draw to raycasting shader
-    // this.gl.useProgram(this.raycastingProgramInfo.program);
-    // twgl.bindFramebufferInfo(this.gl);
-    // this.gl.cullFace(this.gl.BACK);
-    // twgl.setBuffersAndAttributes(this.gl, this.raycastingProgramInfo, this.quadBufferInfo);
-    //
-    // //set frontFaces
-    // this.gl.activeTexture(this.gl.TEXTURE0);
-    // this.gl.bindTexture(this.gl.TEXTURE_2D,this.fboFrontFaces.attachments[0]);
-    // this.gl.activeTexture(this.gl.TEXTURE1);
-    // this.gl.bindTexture(this.gl.TEXTURE_2D,this.fboBackFaces.attachments[0]);
-    // twgl.setUniforms(this.raycastingProgramInfo,{
-    //   frontFaces : 0,//index for textureUnit from setActiveTexture
-    //   backFaces : 1
-    // });
-    // //TODO: load and bind 3d texture
-    // this.gl.drawElements(this.gl.TRIANGLES, this.quadBufferInfo.numElements, this.gl.UNSIGNED_SHORT, 0);
+    //draw to raycasting shader
+    this.gl.useProgram(this.raycastingProgramInfo.program);
+    twgl.bindFramebufferInfo(this.gl);
+    this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT);
+    this.gl.cullFace(this.gl.BACK);
+    twgl.setBuffersAndAttributes(this.gl, this.raycastingProgramInfo, this.quadBufferInfo);
+
+    //set frontFaces
+    this.gl.activeTexture(this.gl.TEXTURE0);
+    this.gl.bindTexture(this.gl.TEXTURE_2D,this.fboFrontFaces.attachments[0]);
+    this.gl.activeTexture(this.gl.TEXTURE1);
+    this.gl.bindTexture(this.gl.TEXTURE_2D,this.fboBackFaces.attachments[0]);
+    twgl.setUniforms(this.raycastingProgramInfo,{
+      frontFaces : 0,//index for textureUnit from setActiveTexture
+      backFaces : 1
+    });
+    //TODO: load and bind 3d texture
+    this.gl.drawElements(this.gl.TRIANGLES, this.quadBufferInfo.numElements, this.gl.UNSIGNED_SHORT, 0);
 
     //change frame
     requestAnimationFrame((time)=>this.renderCube(time));
